@@ -1,0 +1,3 @@
+NameError in line 5 of /home/jovyan/preprocess_snakemake/Snakefile:
+name 'SAMPLE_PREFIX' is not defined
+  File "/home/jovyan/preprocess_snakemake/Snakefile", line 5, in <module>

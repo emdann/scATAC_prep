@@ -1,0 +1,6 @@
+Building DAG of jobs...
+MissingInputException in line 14 of /home/jovyan/preprocess_snakemake/Snakefile:
+Missing input files for rule make_anndata_RNA:
+/nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/RNA_raw/GSE126074_P0_BrainCortex_SNAREseq_cDNA.counts.mtx.gz
+/nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/RNA_raw/GSE126074_P0_BrainCortex_SNAREseq_cDNA.barcodes.tsv.gz
+/nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/RNA_raw/GSE126074_P0_BrainCortex_SNAREseq_cDNA.genes.tsv.gz

@@ -1,0 +1,3 @@
+WorkflowError in line 1 of /home/jovyan/preprocess_snakemake/Snakefile:
+Config file must be given as JSON or YAML with keys at top level.
+  File "/home/jovyan/preprocess_snakemake/Snakefile", line 1, in <module>

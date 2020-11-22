@@ -1,0 +1,16 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	cistopic_transpose_train
+	1
+
+[Wed Jul 22 12:09:02 2020]
+rule cistopic_transpose_train:
+    input: /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_ATAC_cisTopic.tsv
+    output: /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_ATAC_cisTopic.trainedTransposedCistopic.RDS
+    jobid: 0
+    wildcards: datadir=/nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain, sample_prefix=GSE126074_P0_BrainCortex_SNAREseq
+

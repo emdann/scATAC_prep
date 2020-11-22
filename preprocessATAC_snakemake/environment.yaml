@@ -1,0 +1,22 @@
+channels:
+  - conda-forge
+  - bioconda
+#   - defaults
+dependencies:
+  - bioconda::snakemake-minimal=5.4.5
+  - python=3.7
+  - pip=19.3
+  - pandas=0.24.2
+  - matplotlib=2.2.3
+  - pip:
+    - scipy==1.2.1
+    - scanpy==1.5.1
+    - anndata==0.7.1
+    - numpy==1.17.2
+
+
+
+# #   - r-environment 
+#   - r-essentials 
+#   - r-base
+#   - r-tidyverse

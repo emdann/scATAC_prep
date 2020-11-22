@@ -1,0 +1,6 @@
+datadir: "/nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain"
+sample_prefix: "GSE126074_P0_BrainCortex_SNAREseq"
+genome: "mm10"
+k: 30
+peak_width: 180
+prox_window: 50000

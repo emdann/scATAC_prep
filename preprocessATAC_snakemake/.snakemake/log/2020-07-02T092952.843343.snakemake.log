@@ -1,0 +1,25 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	all
+	1	annotate_peaks
+	2
+
+[Thu Jul  2 09:29:52 2020]
+rule annotate_peaks:
+    input: /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/ATAC_raw/GSE126074_P0_BrainCortex_SNAREseq_chromatin.peaks.tsv.gz
+    output: /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/ATACpeaks_annotation.csv
+    jobid: 2
+    wildcards: datadir=/nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain
+
+[Thu Jul  2 09:29:52 2020]
+Error in rule annotate_peaks:
+    jobid: 2
+    output: /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/ATACpeaks_annotation.csv
+
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: /home/jovyan/preprocess_snakemake/.snakemake/log/2020-07-02T092952.843343.snakemake.log

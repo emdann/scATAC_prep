@@ -1,0 +1,3 @@
+NameError in line 71 of /home/jovyan/preprocess_snakemake/Snakefile:
+name 'GENOME' is not defined
+  File "/home/jovyan/preprocess_snakemake/Snakefile", line 71, in <module>

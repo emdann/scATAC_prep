@@ -1,0 +1,3 @@
+WildcardError in line 6 of /home/jovyan/preprocess_snakemake/Snakefile:
+No values given for wildcard 'sample_prefix'.
+  File "/home/jovyan/preprocess_snakemake/Snakefile", line 6, in <module>

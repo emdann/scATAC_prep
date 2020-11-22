@@ -1,0 +1,68 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 1
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	all
+	1	cistopic_train
+	1	dim_red_atac
+	1	proximal_peak2gene
+	1	save_features
+	5
+
+[Fri Jul  3 07:10:39 2020]
+rule cistopic_train:
+    input: /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_ATAC_cisTopic.tsv
+    output: /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_ATAC_cisTopic.trainedCistopic.RDS, /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_ATAC_cisTopic.topics.csv
+    jobid: 2
+    wildcards: datadir=/nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain, sample_prefix=GSE126074_P0_BrainCortex_SNAREseq
+
+[Fri Jul  3 10:30:21 2020]
+Finished job 2.
+1 of 5 steps (20%) done
+
+[Fri Jul  3 10:30:21 2020]
+rule dim_red_atac:
+    input: /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_ATAC_raw.h5ad, /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_ATAC_cisTopic.topics.csv
+    output: /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_ATAC.h5ad
+    jobid: 3
+    wildcards: datadir=/nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain, sample_prefix=GSE126074_P0_BrainCortex_SNAREseq
+
+[Fri Jul  3 10:30:26 2020]
+Finished job 3.
+2 of 5 steps (40%) done
+
+[Fri Jul  3 10:30:26 2020]
+rule save_features:
+    input: /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_ATAC.h5ad, /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_RNA.h5ad
+    output: /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_ATAC.features.csv, /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_RNA.features.csv
+    jobid: 7
+    wildcards: datadir=/nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain, sample_prefix=GSE126074_P0_BrainCortex_SNAREseq
+
+[Fri Jul  3 10:30:30 2020]
+Finished job 7.
+3 of 5 steps (60%) done
+
+[Fri Jul  3 10:30:30 2020]
+rule proximal_peak2gene:
+    input: /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_ATAC.features.csv, /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_RNA.features.csv
+    output: /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_peak2gene.mmtx, /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_peak2gene.genes.tsv, /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_peak2gene.peaks.tsv
+    jobid: 4
+    wildcards: datadir=/nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain, sample_prefix=GSE126074_P0_BrainCortex_SNAREseq
+
+Removing temporary output file /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_RNA.features.csv.
+Removing temporary output file /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_ATAC.features.csv.
+[Fri Jul  3 10:31:37 2020]
+Finished job 4.
+4 of 5 steps (80%) done
+
+[Fri Jul  3 10:31:37 2020]
+localrule all:
+    input: /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_RNA.h5ad, /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_ATAC_cisTopic.topics.csv, /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_ATAC.h5ad, /nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_peak2gene.mmtx
+    jobid: 0
+
+[Fri Jul  3 10:31:37 2020]
+Finished job 0.
+5 of 5 steps (100%) done
+Complete log: /home/jovyan/preprocess_snakemake/.snakemake/log/2020-07-03T071039.637199.snakemake.log

@@ -1,0 +1,233 @@
+configfile: "config.yaml"
+
+rule all:
+    input:
+        expand("{datadir}/{sample_prefix}_RNA.h5ad", datadir = config["datadir"], sample_prefix=config["sample_prefix"]),
+        expand("{datadir}/{sample_prefix}_ATAC_cisTopic.topics.csv", datadir = config["datadir"], sample_prefix=config["sample_prefix"]),
+        # expand("{datadir}/{sample_prefix}_ATAC_cisTopic.trainedTransposedCistopic.RDS", datadir = config["datadir"], sample_prefix=config["sample_prefix"]),
+        expand("{datadir}/{sample_prefix}_ATAC.h5ad", datadir = config["datadir"], sample_prefix=config["sample_prefix"]),
+        expand("{datadir}/{sample_prefix}_peak2gene.mmtx", datadir=config["datadir"], sample_prefix=config["sample_prefix"]),
+        expand("{datadir}/{sample_prefix}_ATAC_geneScores.h5ad", datadir = config["datadir"], sample_prefix=config["sample_prefix"])
+        # expand("{datadir}/ATACpeaks_annotation.csv", datadir = config["datadir"], sample_prefix=config["sample_prefix"])
+
+### RNA PREPROCESSING ###
+
+rule make_anndata_RNA:
+    input:
+        "{datadir}/RNA_raw/{sample_prefix}_cDNA.counts.mtx.gz",
+        "{datadir}/RNA_raw/{sample_prefix}_cDNA.barcodes.tsv.gz",
+        "{datadir}/RNA_raw/{sample_prefix}_cDNA.genes.tsv.gz"
+    output:
+        "{datadir}/{sample_prefix}_RNA_raw.h5ad"
+    run:
+        import pandas as pd 
+        import scanpy as sc
+        
+        bc = pd.read_table(input[1], header=None)
+        feat = pd.read_table(input[2], header=None)
+        adata = sc.read_mtx(input[0]).T
+        adata.obs_names = bc[0]
+        adata.var_names = feat[0]
+        adata.write_h5ad(output[0])
+        
+rule dim_red_rna:
+    input:
+        h5ad="{datadir}/{sample_prefix}_RNA_raw.h5ad"
+    output:
+        h5ad="{datadir}/{sample_prefix}_RNA.h5ad"
+    params:
+        k=30
+    run:
+        import scanpy as sc
+        import pandas as pd 
+        
+        adata = sc.read_h5ad(input["h5ad"])
+        ## Prefiltering
+        sc.pp.filter_cells(adata, min_genes=200)
+        sc.pp.filter_genes(adata, min_cells=3)
+        # ## QC metrics
+        # adata.var['mt'] = adata.var_names.str.startswith('mt-')  # annotate the group of mitochondrial genes as 'mt'
+        # sc.pp.calculate_qc_metrics(adata, qc_vars=['mt'], percent_top=None, inplace=True)
+        
+        ## Dim reduction 
+        adata_rna_dim = adata.copy()
+        sc.pp.normalize_total(adata_rna_dim, target_sum=1e04)
+        sc.pp.log1p(adata_rna_dim)
+        sc.pp.highly_variable_genes(adata_rna_dim, min_mean=0.0125, max_mean=3, min_disp=0.5)
+        adata_rna_dim = adata_rna_dim[:, adata_rna_dim.var.highly_variable]
+        sc.pp.scale(adata_rna_dim, max_value=10)
+        sc.tl.pca(adata_rna_dim, svd_solver='arpack')
+        adata.obsm["X_pca"] = adata_rna_dim.obsm["X_pca"]
+        
+        ## Save anndata
+        adata.write_h5ad(output["h5ad"])
+
+### ATAC PREPROCESSING ###
+
+rule annotate_peaks:
+    input:
+        "{datadir}/ATAC_raw/{[sample_prefix]}_chromatin.peaks.tsv.gz"
+    output:
+        "{datadir}/ATACpeaks_annotation.csv"
+    params:
+        genome=expand("{genome}", genome=config["genome"]),
+        # genome="mm10",
+        outdir="{datadir}"
+    shell:
+       "Rscript annotate_peaks.R {input} {params.outdir} --genome {params.genome}"
+
+        
+rule make_anndata_ATAC:
+    input:
+        cnts="{datadir}/ATAC_raw/{sample_prefix}_chromatin.counts.mtx.gz",
+        bcs="{datadir}/ATAC_raw/{sample_prefix}_chromatin.barcodes.tsv.gz",
+        peaks="{datadir}/ATAC_raw/{sample_prefix}_chromatin.peaks.tsv.gz",
+        peak_anno="{datadir}/ATACpeaks_annotation.csv"
+    output:
+        h5ad="{datadir}/{sample_prefix}_ATAC_raw.h5ad",
+        cnt_tsv="{datadir}/{sample_prefix}_ATAC_cisTopic.tsv"
+    params:
+        k=config["k"],
+        width=config["peak_width"]
+    run:
+        import pandas as pd 
+        import scanpy as sc
+        
+        bc = pd.read_table(input["bcs"], header=None)
+        feat = pd.read_table(input["peaks"], header=None)
+        adata = sc.read_mtx(input["cnts"]).T
+        adata.obs_names = bc[0]
+        adata.var_names = feat[0]
+        
+        ## Add peak annotation to var
+        peak_anno_df = pd.read_csv(input["peak_anno"], index_col=0)
+        peak_anno_df.index = peak_anno_df["peak_id"]
+        peak_anno_df.drop("peak_id",1, inplace=True)
+        adata.var = pd.concat([adata.var, peak_anno_df], 1)
+        
+        ## Save binary data to layers
+        adata.layers["binary_raw"] = adata.X
+        adata.layers["binary_raw"][adata.layers["binary_raw"] > 1] = 1
+        
+        ## Filter peaks 
+        var_qc = sc.pp.calculate_qc_metrics(adata, layer="binary_raw")[1]
+        adata.var = pd.concat([adata.var, var_qc], 1)
+        adata = adata[:,adata.var.total_counts > params['k']] # Accessible in at least k cells
+        adata = adata[:, adata.var.ENCODE_blacklist==0] # Not in ENCODE blacklist
+        adata = adata[:, adata.var.peak_width > params['width']] # Filter by width (remove peaks at the lowest end)
+        
+        ## Save count matrix for cisTopic
+        ct_df = pd.DataFrame(adata.layers["binary_raw"].toarray().T)
+        ct_df.columns = adata.obs_names
+        ct_df.index = adata.var_names
+        ct_df.to_csv(output["cnt_tsv"], sep="\t")
+        
+        ## Write output anndata
+        adata.write_h5ad(output["h5ad"])
+
+## Dimensionality reduction
+rule cistopic_train:
+    input:
+        "{datadir}/{sample_prefix}_ATAC_cisTopic.tsv"
+    output:
+        "{datadir}/{sample_prefix}_ATAC_cisTopic.trainedCistopic.RDS",
+        "{datadir}/{sample_prefix}_ATAC_cisTopic.topics.csv",
+        temp("{datadir}/{sample_prefix}_ATAC_cisTopic.predDist.csv"),
+        temp("{datadir}/{sample_prefix}_ATAC_cisTopic.geneScores.csv")
+    params:
+        seed=2020
+    threads: 20
+    shell:
+       "Rscript run_cistopic.R {input} --n_cores {threads} --seed {params.seed}"
+
+rule dim_red_atac:
+    input:
+        h5ad="{datadir}/{sample_prefix}_ATAC_raw.h5ad",
+        topics="{datadir}/{sample_prefix}_ATAC_cisTopic.topics.csv",
+        predDist="{datadir}/{sample_prefix}_ATAC_cisTopic.predDist.csv"
+    output:
+        h5ad="{datadir}/{sample_prefix}_ATAC.h5ad"
+    params:
+        k=config["k"]
+    run:
+        import scanpy as sc
+        import pandas as pd 
+        
+        adata = sc.read_h5ad(input["h5ad"])
+        ## Add cistopic topics as reduced dimensions
+        cistopic_df = pd.read_csv(input["topics"], index_col="cell")
+        adata.obsm["X_cistopic"] = cistopic_df.loc[adata.obs_names].values
+        adata.obsm["X_pca"] = adata.obsm["X_cistopic"]
+        ## Add predictive distribution as layer
+        p_mat = pd.read_csv(input["predDist"])
+        adata.layers["cistopic_p"] = p_mat
+        # ## Build knn graph
+        # sc.pp.neighbors(adata, n_neighbors=params["k"], n_pcs=adata.obsm["X_cistopic"].shape[1])
+        # ## Run UMAP
+        # sc.tl.umap(adata)
+        ## Save anndata
+        adata.write_h5ad(output["h5ad"])
+        
+rule save_gene_scores:
+    input:
+        gene_mat="{datadir}/{sample_prefix}_ATAC_cisTopic.geneScores.csv"
+    output:
+        h5ad="{datadir}/{sample_prefix}_ATAC_geneScores.h5ad"
+    run:
+        import scanpy as sc
+        import pandas as pd 
+            
+        ## Make anndata of gene scores
+        gene_mat = pd.read_csv(input["gene_mat"], index_col=0)
+        gene_adata = anndata.AnnData(X=gene_mat.T)
+        gene_adata.write_h5ad(output["h5ad"])
+
+## Normalization
+rule cistopic_transpose_train:
+    input:
+        "{datadir}/{sample_prefix}_ATAC_cisTopic.tsv"
+    output:
+        "{datadir}/{sample_prefix}_ATAC_cisTopic.trainedTransposedCistopic.RDS",
+        # "{datadir}/{sample_prefix}_ATAC_cisTopic.probabilityT.mmtx"
+    params:
+        seed=2020
+    threads: 20
+    shell:
+       "Rscript run_transpose_cistopic.R {input} --n_cores {threads} --seed {params.seed}"
+
+### PEAK 2 GENE LINKS ### 
+
+rule save_features:
+    input:
+        atac="{datadir}/{sample_prefix}_ATAC.h5ad",
+        rna="{datadir}/{sample_prefix}_RNA.h5ad"
+    output:
+        atac=temp("{datadir}/{sample_prefix}_ATAC.features.csv"),
+        rna=temp("{datadir}/{sample_prefix}_RNA.features.csv")
+    run:
+        import scanpy as sc
+        import pandas as pd 
+        
+        adata_rna = sc.read_h5ad(input["rna"])
+        adata_atac = sc.read_h5ad(input["atac"])
+        
+        pd.DataFrame(adata_rna.var_names).to_csv(output["rna"])
+        pd.DataFrame(adata_atac.var_names).to_csv(output["atac"])
+
+rule proximal_peak2gene:
+    input:
+        atac="{datadir}/{sample_prefix}_ATAC.features.csv",
+        rna="{datadir}/{sample_prefix}_RNA.features.csv"      
+    output:
+        "{datadir}/{sample_prefix}_peak2gene.mmtx",
+        "{datadir}/{sample_prefix}_peak2gene.genes.tsv",
+        "{datadir}/{sample_prefix}_peak2gene.peaks.tsv"
+    params:
+        genome=expand("{genome}", genome=config["genome"]),
+        prox_window=config["prox_window"]
+    shell:
+        "Rscript proximal_peak2gene.R {input.atac} {input.rna} --genome {params.genome} --prox_window {params.prox_window}"
+        
+
+
+
