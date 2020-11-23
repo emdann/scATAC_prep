@@ -72,8 +72,3 @@ See (short) notebook: `peak2genes.ipynb`
 
 A range of downstream analyses require to associate genes to peaks in their proximity (i.e. overlapping the gene body or less than _n_ kbs away). The script `proximal_peak2gene.R` uses functionality in the `GenomicRanges` R package to create a sparse matrix of peak x gene assignment, where 1s indicate that a peak is in the proximity of the gene (N.B. A peak might be proximal to multiple genes). The default proximity window is 50 kbs.
 
-## FAQs
-
-**Why cisTopic and not x,y,z...?** 
-
-
