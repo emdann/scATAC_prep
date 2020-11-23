@@ -4,7 +4,6 @@ suppressPackageStartupMessages({
   library(Signac)
   library(GenomicRanges)
   library(data.table)
-#   library(cellatacUtils)
   library(EnsDb.Hsapiens.v86)
   library(tidyverse)
   library(EnsDb.Mmusculus.v79)

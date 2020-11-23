@@ -23,9 +23,9 @@ Go the the folder w the scripts
 cd scATAC_preprocess/preprocessATAC_snakemake
 ```
 
-Install a bunch of R packages. In R:
+Install required R packages (other packages are installed directly in the notebooks)
 ```
-install.packages("Signac")
+install.packages(c("data.table","Signac", "tidyverse", "argparse"))
 
 if (!requireNamespace("BiocManager", quietly = TRUE)){
     install.packages("BiocManager")
@@ -34,25 +34,30 @@ BiocManager::install(c("ensembldb", "EnsDb.Mmusculus.v79", "EnsDb.Hsapiens.v86",
 
 ```
 
+Install required python packages:
+```
+pip install scanpy anndata numpy pandas anndata2ri rpy2 scipy
+```
 
-#### Annotate peaks (R) 
 
-This script calculates some basic stats on the peaks identified by `cellatac` that we will use for filtering and in later stages of the analysis. 
+#### 1. Annotate peaks 
+
+This script uses functionality in [`GenomicRanges`](https://bioconductor.org/packages/release/bioc/vignettes/GenomicRanges/inst/doc/GenomicRangesIntroduction.html) to compute some basic stats on the peaks identified by `cellatac`. We will use these for filtering and in later stages of the analysis. 
 
 In terminal:
 ```
 Rscript annotate_peaks.R $cellatac_outs/peaks.txt $outdir --genome hg38
 ```
 
-#### Make anndata 
+#### 2. Make anndata and filter peaks
 
 See notebook: `cellatac2anndata.ipynb`
 
 Here we make an anndata object, we filter out a lot of peaks and start saving different layers (loading the big matrix takes some time, be patient).
 
-The notebook saves (A) An `.h5ad` abject storing the raw counts and peak annotations for the dataset; (B) The binary counts matrix in `.mtx`, that is used to run cisTopic (lots of time-consuming I/O here, could and should be improved)
+The notebook saves an `.h5ad` abject storing the raw counts and peak annotations for the dataset.
 
-#### Run cisTopic 
+#### 3. Run cisTopic 
 
 See notebook: `add_cistopic.ipynb`
 
