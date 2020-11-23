@@ -5,9 +5,6 @@ This repo contains a collection of scripts and notebooks that I use for initial 
 ### Input 
 After running `cellatac` you will have a results folder. From that we will need the contents of `results/peak_matrix`
 
-- A file containing the peak ids (peak_matrix/peaks.txt)
-- A peak x cell count matrix
-
 ### Setting up
 
 Make a new folder to store all your results
@@ -74,12 +71,14 @@ References for uses of cisTopic:
 - [Bravo Gonzales-Blas et al. (2020) Identification of genomic enhancers through spatial integration of single‐cell transcriptomics and epigenomics. Mol. Syst. Biol.](https://www.embopress.org/doi/full/10.15252/msb.20209438) 
  
 
-#### Match genes to proximal peaks
+#### 4. Match genes to proximal peaks
 
 See (short) notebook: `peak2genes.ipynb`
 
 A range of downstream analyses require to associate genes to peaks in their proximity (i.e. overlapping the gene body or less than _n_ kbs away). The script `proximal_peak2gene.R` uses functionality in the `GenomicRanges` R package to create a sparse matrix of peak x gene assignment, where 1s indicate that a peak is in the proximity of the gene (N.B. A peak might be proximal to multiple genes). The default proximity window is 50 kbs.
 
+## FAQs
 
+**Why cisTopic and not x,y,z...?** 
 
 
