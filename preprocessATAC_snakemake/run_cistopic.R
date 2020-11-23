@@ -2,6 +2,7 @@
 suppressPackageStartupMessages({
     library(cisTopic)
     library(Matrix)
+    library(sparseMatrix)
     library(readr)
     library(tibble)
     library(argparse)
@@ -13,7 +14,7 @@ suppressPackageStartupMessages({
 
 parser <- ArgumentParser()
 parser$add_argument("count_mat", type="character",
-                    help = "Path to tsv file for input count matrix")
+                    help = "Path to mtx file for input count matrix")
 # parser$add_argument("outdir", type="character",
 #                     help = "Path to output directory")
 parser$add_argument("--n_cores", default = 20,
@@ -34,7 +35,8 @@ seed <- args$seed
 
 # countpath <- "/nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain/GSE126074_P0_BrainCortex_SNAREseq_ATAC_cisTopic.tsv"
 print("Starting to load ...")
-count.matrix <- fread(countpath, sep = "\t", header=TRUE)
+readMM()
+# count.matrix <- fread(countpath, sep = "\t", header=TRUE)
 count.matrix = as.data.frame(count.matrix)
 count.matrix = column_to_rownames(count.matrix, "peak_id")
 
