@@ -15,11 +15,6 @@ outdir=./my_scATAC_dir
 cellatac_outs=results/peak_matrix
 ```
 
-Go the the folder w the scripts
-```
-cd scATAC_preprocess/preprocessATAC_snakemake
-```
-
 Install required R packages (other packages are installed directly in the notebooks)
 ```
 install.packages(c("data.table","Signac", "tidyverse", "argparse"))
