@@ -1,4 +1,0 @@
-Building DAG of jobs...
-WildcardError in line 67 of /home/jovyan/preprocess_snakemake/Snakefile:
-Wildcards in input files cannot be determined from output files:
-'sample_prefix'

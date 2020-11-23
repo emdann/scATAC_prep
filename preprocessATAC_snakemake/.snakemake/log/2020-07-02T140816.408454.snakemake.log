@@ -1,6 +1,0 @@
-Building DAG of jobs...
-InputFunctionException in line 138 of /home/jovyan/preprocess_snakemake/Snakefile:
-AttributeError: 'Wildcards' object has no attribute 'k'
-Wildcards:
-datadir=/nfs/team205/ed6/data/paired_RNA_ATAC_datasets/Chen_2019/P0_brain
-sample_prefix=GSE126074_P0_BrainCortex_SNAREseq
